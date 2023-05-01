@@ -7,7 +7,6 @@ import ru.practicum.shareit.common.Create;
 import ru.practicum.shareit.common.Update;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
 
@@ -24,14 +23,14 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto createNewUser(@Validated(Create.class) @RequestBody final User user) {
-        return userService.addUser(user);
+    public UserDto createNewUser(@Validated(Create.class) @RequestBody final UserDto userDto) {
+        return userService.addUser(userDto);
     }
 
     @PatchMapping("/{id}")
     public UserDto updateUser(@PathVariable final Long id,
-                           @Validated(Update.class) @RequestBody final User user) {
-        return userService.updateUser(id, user);
+                           @Validated(Update.class) @RequestBody final UserDto userDto) {
+        return userService.updateUser(id, userDto);
     }
 
     @GetMapping("/{id}")

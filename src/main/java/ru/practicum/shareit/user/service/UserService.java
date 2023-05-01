@@ -8,11 +8,11 @@ import java.util.Collection;
 public interface UserService {
     Collection<UserDto> findAll();
 
-    UserDto addUser(User user);
+    UserDto addUser(UserDto userDto);
 
     UserDto getUserById(Long userId);
 
-    UserDto updateUser(Long id, User user);
+    UserDto updateUser(Long id, UserDto userDto);
 
     void deleteUserById(Long userId);
 }
