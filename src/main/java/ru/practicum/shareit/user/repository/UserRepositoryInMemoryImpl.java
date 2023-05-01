@@ -33,7 +33,7 @@ public class UserRepositoryInMemoryImpl implements UserRepository {
     public User getUserById(Long userId) {
         if (!users.containsKey(userId)) {
             log.error(String.format("Пользователь с id=%d не найден", userId));
-            throw new UserNotFoundException("Пользователь с id=%d не найден");
+            throw new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId));
         }
         log.info(String.format("Пользователь с id=%d успешно возвращен", userId));
         return users.get(userId);
@@ -50,20 +50,18 @@ public class UserRepositoryInMemoryImpl implements UserRepository {
             }
             userForUpdate.setEmail(email);
         });
-        users.put(userId, userForUpdate);
         log.info(String.format("Пользователь с id=%d успешно обновлен", userId));
         return userForUpdate;
-
     }
 
     @Override
     public void deleteUserById(Long userId) {
-        if (!users.containsKey(userId)) {
+        var user = users.remove(userId);
+        if (user == null) {
             log.warn(String.format("Пользователь с id=%d не найден", userId));
-            return;
+        } else {
+            log.info(String.format("Пользователь с id=%d успешно удален", userId));
         }
-        users.remove(userId);
-        log.info(String.format("Пользователь с id=%d успешно удален", userId));
     }
 
     private void checkUserEmail(String email) {

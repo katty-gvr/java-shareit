@@ -30,7 +30,7 @@ public class ItemRepositoryInMemoryImpl implements ItemRepository {
             item.setId(++generatorId);
         }
         items.put(item.getId(), item);
-        log.info(String.format("Вещь с id=%d успешно добавлена", item.getId()));
+        log.info(String.format("Вещь с id=%d успешно добавлена/обновлена", item.getId()));
         return item;
     }
 
@@ -40,17 +40,17 @@ public class ItemRepositoryInMemoryImpl implements ItemRepository {
             log.error(String.format("Вещь с id=%d не найдена", itemId));
             throw new ItemNotFoundException("Вещь не найдена");
         }
-        log.info(String.format("вещь с id=%d успешно возвращена", itemId));
+        log.info(String.format("Вещь с id=%d успешно возвращена", itemId));
         return items.get(itemId);
     }
 
     @Override
     public void deleteItemById(Long id) {
-        if (!items.containsKey(id)) {
+        var item = items.remove(id);
+        if (item == null) {
             log.warn(String.format("Вещь с id=%d не найдена", id));
-            return;
+        } else {
+            log.info(String.format("Вещь с id=%d успешно удалена", id));
         }
-        items.remove(id);
-        log.info(String.format("Вещь с id=%d успешно удалена", id));
     }
 }

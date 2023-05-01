@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder
 public class UserDto {
-
     Long id;
     String name;
     @NotBlank

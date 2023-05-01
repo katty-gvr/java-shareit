@@ -17,29 +17,28 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
     @Override
     public Collection<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(userMapper::toUserDto)
+                .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public UserDto addUser(User user) {
-        return userMapper.toUserDto(userRepository.addUser(user));
+        return UserMapper.toUserDto(userRepository.addUser(user));
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        return userMapper.toUserDto(userRepository.getUserById(userId));
+        return UserMapper.toUserDto(userRepository.getUserById(userId));
     }
 
     @Override
     public UserDto updateUser(Long id, User user) {
-        return userMapper.toUserDto(userRepository.updateUserById(id, user));
+        return UserMapper.toUserDto(userRepository.updateUserById(id, user));
     }
 
     @Override

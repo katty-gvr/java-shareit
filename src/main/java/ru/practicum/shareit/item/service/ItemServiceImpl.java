@@ -20,14 +20,13 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final ItemMapper itemMapper;
     private final UserRepository userRepository;
 
     @Override
     public Collection<ItemDto> findAll() {
         return itemRepository.findAll()
                 .stream()
-                .map(itemMapper::toItemDto)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -36,7 +35,7 @@ public class ItemServiceImpl implements ItemService {
        return itemRepository.findAll()
               .stream()
                .filter(item -> Objects.equals(item.getOwner().getId(), userId))
-               .map(itemMapper::toItemDto)
+               .map(ItemMapper::toItemDto)
                .collect(Collectors.toList());
 
     }
@@ -44,16 +43,16 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto createItem(Long userId, ItemDto itemDto) {
         User owner = userRepository.getUserById(userId);
-        Item item = itemMapper.toItem(itemDto);
+        Item item = ItemMapper.toItem(itemDto);
         item.setOwner(owner);
-        log.info("Пользователь с id=%d добавил новую вещь");
+        log.info(String.format("Пользователь с id=%d добавил новую вещь", owner.getId()));
         itemRepository.addItem(item);
-        return itemMapper.toItemDto(item);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
     public ItemDto getItemById(Long itemId) {
-        return itemMapper.toItemDto(itemRepository.getItemById(itemId));
+        return ItemMapper.toItemDto(itemRepository.getItemById(itemId));
     }
 
     @Override
@@ -68,21 +67,18 @@ public class ItemServiceImpl implements ItemService {
         Optional.ofNullable(itemDto.getDescription()).ifPresent(itemForUpdate::setDescription);
         Optional.ofNullable(itemDto.getAvailable()).ifPresent(itemForUpdate::setAvailable);
 
-        itemRepository.addItem(itemForUpdate);
         log.info(String.format("Вещь с id=%d успешно обновлена", userId));
-        return itemMapper.toItemDto(itemForUpdate);
+        return ItemMapper.toItemDto(itemForUpdate);
     }
 
     @Override
     public Collection<ItemDto> searchItem(String word) {
-        if (word == null || word.isBlank()) {
-            return Collections.emptyList();
-        }
+        String wordInLowerCase = word.toLowerCase();
         return itemRepository.findAll().stream()
                 .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(word.toLowerCase())
+                .filter(item -> item.getName().toLowerCase().contains(wordInLowerCase)
                 || item.getDescription().toLowerCase().contains(word.toLowerCase()))
-                .map(itemMapper::toItemDto)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
