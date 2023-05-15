@@ -30,4 +30,32 @@ public class ExceptionsHandler {
         log.info("Item not found error: {}", e.getMessage());
         return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingException(final BookingException e) {
+        log.info("Booking exception error: {}", e.getMessage());
+        return new ErrorResponse("Некорректный ввод: " + e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingNotFoundException(final BookingNotFoundException e) {
+        log.info("Booking not found error: {}", e.getMessage());
+        return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequestException(final BadRequestException e) {
+        log.info("Bad request error: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleCommentNotFoundException(final CommentNotFoundException e) {
+        log.info("Comment not found error: {}", e.getMessage());
+        return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
+    }
 }

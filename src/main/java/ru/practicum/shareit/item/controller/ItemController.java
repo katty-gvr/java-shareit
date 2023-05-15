@@ -4,8 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.common.Create;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.common.Update;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.Collection;
@@ -16,6 +22,8 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
+    private final CommentMapper commentMapper;
+    private final CommentService commentService;
 
     @PostMapping
     public ItemDto createNewItem(@RequestHeader("X-Sharer-User-Id") final Long userId,
@@ -31,8 +39,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@PathVariable final Long itemId) {
-        return itemService.getItemById(itemId);
+    public ItemDto getItem(@PathVariable final Long itemId,
+                           @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping
@@ -46,5 +55,16 @@ public class ItemController {
             return Collections.emptyList();
         }
         return itemService.searchItem(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createItemComment(@RequestBody final CommentShortDto commentShortDto,
+                                        @PathVariable final Long itemId,
+                                        @RequestHeader("X-Sharer-User-Id") Long userId) {
+        Comment comment = commentMapper.toComment(commentShortDto, itemId, userId);
+        if (comment.getText().isBlank()) {
+            throw new BadRequestException("Текст комментария не может быть пустым");
+        }
+        return CommentMapper.toCommentDto(commentService.addNewComment(comment));
     }
 }
