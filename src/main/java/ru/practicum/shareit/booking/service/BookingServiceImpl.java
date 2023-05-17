@@ -12,11 +12,10 @@ import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,18 +23,18 @@ import java.util.stream.Stream;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
-    private final UserService userService;
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public BookingDto createBooking(Long userId, BookingShortDto bookingShortDto) {
-        User booker = UserMapper.toUser(userService.getUserById(userId));
+        User booker = userRepository.findById(userId).orElseThrow();
         Item item = itemRepository.findById(bookingShortDto.getItemId()).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Вещь не найдена", bookingShortDto.getItemId())));
         if (!item.getAvailable()) {
@@ -49,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBooker(booker);
         booking.setItem(item);
         bookingRepository.save(booking);
-        log.info(String.format("Пользователь с id=%d забронировал вещь с id=%d", booker.getId(), item.getId()));
+        log.info("Пользователь с id={} забронировал вещь с id={}", booker.getId(), item.getId());
         return BookingMapper.toBookingDto(booking);
     }
 
@@ -60,55 +59,46 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingOptional.orElseThrow(() ->
                 new BookingNotFoundException(String.format("Бронирование с id=%d не найдено", bookingId)));
 
-        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
-            throw new BookingException("Бронирование было подтверждено ранее");
-
+        if (!booking.getStatus().equals(BookingStatus.WAITING)) {
+            throw new BookingException("Бронирование было подтверждено ранее или отменено");
         }
-       if (booking.getBooker().getId().equals(ownerId)) {
-           throw new BookingNotFoundException(String.format("Пользователь с id=%d не является владельцем вещи с бронированием id=%d", ownerId, bookingId));
-       }
-       booking.setStatus(isApproved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-       bookingRepository.save(booking);
-       log.info(String.format("Пользователь с id=%d подтвердил бронирование вещи с id=%d", ownerId, bookingId));
+        if (!booking.getItem().getOwner().getId().equals(ownerId)) {
+            throw new BookingNotFoundException(String.format("Пользователь с id=%d не является владельцем вещи с бронированием id=%d", ownerId, bookingId));
+        }
+        booking.setStatus(isApproved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+        bookingRepository.save(booking);
+        log.info("Пользователь с id={} подтвердил бронирование вещи с id={}", ownerId, bookingId);
 
-       return BookingMapper.toBookingDto(booking);
+        return BookingMapper.toBookingDto(booking);
     }
 
     @Override
-    @Transactional
     public BookingDto getBooking(Long bookingId, Long userId) {
         Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
         Booking booking = bookingOptional.orElseThrow(() -> new BookingNotFoundException(String.format("Бронирование с id=%d не найдено", bookingId)));
         if (!booking.getItem().getOwner().getId().equals(userId) && !booking.getBooker().getId().equals(userId)) {
             throw new BookingNotFoundException(String.format("Пользователь с id=%d не является хозяином вещи и не делал бронирование id=%d", userId, bookingId));
         }
-        log.info(String.format("Бронирование id=%d успешно получено пользователем id=%d", bookingId, userId));
+        log.info("Бронирование id={} успешно получено пользователем id={}", bookingId, userId);
         return BookingMapper.toBookingDto(booking);
     }
 
     @Override
-    @Transactional
     public Collection<BookingDto> getAllBookingsByUser(Long userId, String state) {
         StateOfBookingRequest stateIn = getState(state);
-        User user = UserMapper.toUser(userService.getUserById(userId));
+        User user = userRepository.findById(userId).orElseThrow();
         List<Booking> userBookings = bookingRepository.findByBooker(user);
+        log.info("Список всех бронирований со статусом {} пользователя с id={} успешно получен", state, userId);
         return getBookingsByState(userBookings, stateIn).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
     @Override
-    @Transactional
     public Collection<BookingDto> getBookingsForUserItems(Long userId, String state) {
         StateOfBookingRequest stateIn = getState(state);
-        User user = UserMapper.toUser(userService.getUserById(userId));
+        User user = userRepository.findById(userId).orElseThrow();
         List<Booking> userBookings = bookingRepository.findByItem_Owner(user);
+        log.info("Список бронирований со статусом {} для вещей пользователя с id={} успешно получен", state, userId);
         return getBookingsByState(userBookings, stateIn).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional
-    public List<Booking> getItemBookings(Item item) {
-        List<Booking> bookings = bookingRepository.findByItem(item);
-        return new ArrayList<>(getBookingsByState(bookings, StateOfBookingRequest.ALL));
     }
 
     private void validateBookingTime(Booking booking) {

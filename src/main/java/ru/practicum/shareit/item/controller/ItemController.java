@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.common.Update;
 import ru.practicum.shareit.item.mapper.CommentMapper;
-import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -22,7 +21,6 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
-    private final CommentMapper commentMapper;
     private final CommentService commentService;
 
     @PostMapping
@@ -61,10 +59,9 @@ public class ItemController {
     public CommentDto createItemComment(@RequestBody final CommentShortDto commentShortDto,
                                         @PathVariable final Long itemId,
                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
-        Comment comment = commentMapper.toComment(commentShortDto, itemId, userId);
-        if (comment.getText().isBlank()) {
+        if (commentShortDto.getText().isBlank()) {
             throw new BadRequestException("Текст комментария не может быть пустым");
         }
-        return CommentMapper.toCommentDto(commentService.addNewComment(comment));
+        return commentService.addNewComment(commentShortDto, itemId, userId);
     }
 }

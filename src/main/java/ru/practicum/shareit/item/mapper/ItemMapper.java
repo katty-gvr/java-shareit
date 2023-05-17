@@ -61,7 +61,6 @@ public class ItemMapper {
                     (booking.getStatus() == BookingStatus.WAITING ||
                             booking.getStatus() == BookingStatus.APPROVED)) {
                 itemDto.setLastBooking(BookingMapper.toShortBookingDto(booking));
-                break;
             }
         }
         return itemDto;

@@ -6,46 +6,42 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.CommentNotFoundException;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentShortDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.model.Comment;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final CommentMapper commentMapper;
 
     @Override
-    @Transactional
-    public Comment getCommentById(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(() ->
-                new CommentNotFoundException(String.format("Комментарий с id=%d не найден", commentId)));
+    public CommentDto getCommentById(Long commentId) {
+        return CommentMapper.toCommentDto(commentRepository.findById(commentId).orElseThrow(() ->
+                new CommentNotFoundException(String.format("Комментарий с id=%d не найден", commentId))));
     }
 
     @Override
     @Transactional
-    public Comment addNewComment(Comment comment) {
+    public CommentDto addNewComment(CommentShortDto commentDto, Long itemId, Long userId) {
+        Comment comment = commentMapper.toComment(commentDto, itemId, userId);
         if (!bookingRepository.existsBookingByItemAndBookerAndStatusNotAndStart(comment.getItem(),
                 comment.getAuthor(), LocalDateTime.now())) {
-            throw new BadRequestException("Нелья оставить комменатрий к вещи, если она не была взята в аренду" +
+            throw new BadRequestException("Нельзя оставить комменатрий к вещи, если она не была взята в аренду" +
                             "или аренда еще не началась");
         }
         comment.setCreated(LocalDateTime.now());
-        log.info(String.format("Пользователь id=%d добавил комментарий id=%d к вещи id=%d",
-                comment.getAuthor().getId(), comment.getId(), comment.getItem().getId()));
-        return commentRepository.save(comment);
-    }
-
-    @Override
-    @Transactional
-    public List<Comment> getItemComments(Item item) {
-        return commentRepository.findByItemOrderByIdAsc(item);
+        log.info("Пользователь id={} добавил комментарий id={} к вещи id={}",
+                comment.getAuthor().getId(), comment.getId(), comment.getItem().getId());
+        return CommentMapper.toCommentDto(commentRepository.save(comment));
     }
 }
