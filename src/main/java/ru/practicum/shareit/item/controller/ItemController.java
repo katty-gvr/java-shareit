@@ -9,7 +9,6 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.common.Update;
-import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 
