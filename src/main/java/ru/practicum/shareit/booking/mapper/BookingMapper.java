@@ -11,6 +11,10 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 
+import java.time.LocalDateTime;
+
+import static ru.practicum.shareit.common.DateTimeParameters.DATE_TIME_FORMAT;
+
 @Component
 @RequiredArgsConstructor
 public class BookingMapper {
@@ -19,8 +23,8 @@ public class BookingMapper {
         UserDto bookerDto = UserMapper.toUserDto(booking.getBooker());
         return BookingDto.builder()
                 .id(booking.getId())
-                .start(booking.getStart())
-                .end(booking.getEnd())
+                .start(LocalDateTime.parse(booking.getStart().format(DATE_TIME_FORMAT)))
+                .end(LocalDateTime.parse(booking.getEnd().format(DATE_TIME_FORMAT)))
                 .item(itemDto)
                 .booker(bookerDto)
                 .status(booking.getStatus())
@@ -30,8 +34,8 @@ public class BookingMapper {
     public static BookingShortDto toShortBookingDto(Booking booking) {
         return BookingShortDto.builder()
                 .id(booking.getId())
-                .start(booking.getStart())
-                .end(booking.getEnd())
+                .start(LocalDateTime.parse(booking.getStart().format(DATE_TIME_FORMAT)))
+                .end(LocalDateTime.parse(booking.getEnd().format(DATE_TIME_FORMAT)))
                 .itemId(booking.getItem().getId())
                 .bookerId(booking.getBooker().getId())
                 .status(booking.getStatus().name())
@@ -41,8 +45,8 @@ public class BookingMapper {
     public static Booking toBooking(BookingShortDto bookingShortDto) {
         return Booking.builder()
                 .id(bookingShortDto.getId())
-                .start(bookingShortDto.getStart())
-                .end(bookingShortDto.getEnd())
+                .start(LocalDateTime.parse(bookingShortDto.getStart().format(DATE_TIME_FORMAT)))
+                .end(LocalDateTime.parse(bookingShortDto.getEnd().format(DATE_TIME_FORMAT)))
                 .status(BookingStatus.WAITING)
                 .build();
     }

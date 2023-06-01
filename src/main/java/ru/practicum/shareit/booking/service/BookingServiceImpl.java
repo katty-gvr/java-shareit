@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
@@ -43,8 +45,8 @@ public class BookingServiceImpl implements BookingService {
         if (item.getOwner().getId().equals(userId)) {
             throw new BookingNotFoundException("Нелья сделать бронирование на собственную вещь");
         }
+        validateBookingTime(bookingShortDto.getStart(), bookingShortDto.getEnd());
         Booking booking = BookingMapper.toBooking(bookingShortDto);
-        validateBookingTime(booking);
         booking.setBooker(booker);
         booking.setItem(item);
         bookingRepository.save(booking);
@@ -84,34 +86,38 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDto> getAllBookingsByUser(Long userId, String state) {
+    public Collection<BookingDto> getAllBookingsByUser(Long userId, String state, Integer from, Integer size) {
         StateOfBookingRequest stateIn = getState(state);
         User user = userRepository.findById(userId).orElseThrow();
-        List<Booking> userBookings = bookingRepository.findByBooker(user);
+
+        PageRequest page = PageRequest.of(from / size, size, Sort.by("start").descending());
+        List<Booking> userBookings = bookingRepository.findByBooker(user, page);
         log.info("Список всех бронирований со статусом {} пользователя с id={} успешно получен", state, userId);
         return getBookingsByState(userBookings, stateIn).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
     @Override
-    public Collection<BookingDto> getBookingsForUserItems(Long userId, String state) {
+    public Collection<BookingDto> getBookingsForUserItems(Long userId, String state, Integer from, Integer size) {
         StateOfBookingRequest stateIn = getState(state);
         User user = userRepository.findById(userId).orElseThrow();
-        List<Booking> userBookings = bookingRepository.findByItem_Owner(user);
+
+        PageRequest page = PageRequest.of(from / size, size, Sort.by("start").descending());
+        List<Booking> userBookings = bookingRepository.findByItem_Owner(user, page);
         log.info("Список бронирований со статусом {} для вещей пользователя с id={} успешно получен", state, userId);
         return getBookingsByState(userBookings, stateIn).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
-    private void validateBookingTime(Booking booking) {
-        if (booking.getEnd() == null || booking.getStart() == null) {
+    private void validateBookingTime(LocalDateTime start, LocalDateTime end) {
+        if (end == null || start == null) {
             throw new BookingException("Время начала и окончания бронирования должно быть задано");
         }
-        if (booking.getEnd().isBefore(LocalDateTime.now()) || booking.getEnd().isBefore(booking.getStart())) {
+        if (end.isBefore(LocalDateTime.now()) || end.isBefore(start)) {
             throw new BookingException("Время конца бронирования указано некорректно.");
         }
-        if (booking.getStart().isBefore(LocalDateTime.now()) || booking.getStart().isAfter(booking.getEnd())) {
+        if (start.isBefore(LocalDateTime.now()) || start.isAfter(end)) {
             throw new BookingException("Время начала бронирования указано некорректно.");
         }
-        if (booking.getStart().equals(booking.getEnd())) {
+        if (start.equals(end)) {
             throw new BookingException("Время начала бронирования указано некорректно.");
         }
     }

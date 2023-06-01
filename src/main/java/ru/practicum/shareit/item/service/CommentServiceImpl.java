@@ -26,7 +26,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getCommentById(Long commentId) {
-        return CommentMapper.toCommentDto(commentRepository.findById(commentId).orElseThrow(() ->
+        return commentMapper.toCommentDto(commentRepository.findById(commentId).orElseThrow(() ->
                 new CommentNotFoundException(String.format("Комментарий с id=%d не найден", commentId))));
     }
 
@@ -42,6 +42,6 @@ public class CommentServiceImpl implements CommentService {
         comment.setCreated(LocalDateTime.now());
         log.info("Пользователь id={} добавил комментарий id={} к вещи id={}",
                 comment.getAuthor().getId(), comment.getId(), comment.getItem().getId());
-        return CommentMapper.toCommentDto(commentRepository.save(comment));
+        return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 }

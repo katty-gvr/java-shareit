@@ -58,4 +58,11 @@ public class ExceptionsHandler {
         log.info("Comment not found error: {}", e.getMessage());
         return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleRequestNotFoundException(final RequestNotFoundException e) {
+        log.info("Request not found error: {}", e.getMessage());
+        return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
+    }
 }

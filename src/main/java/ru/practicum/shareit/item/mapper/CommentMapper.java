@@ -16,7 +16,7 @@ public class CommentMapper {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    public static CommentDto toCommentDto(Comment comment) {
+    public CommentDto toCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
