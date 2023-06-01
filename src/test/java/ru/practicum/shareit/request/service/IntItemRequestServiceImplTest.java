@@ -34,6 +34,7 @@ public class IntItemRequestServiceImplTest {
     private final User requestor = User.builder().name("user2").email("user2@mail.ru").build();
     private final ItemRequest request = ItemRequest.builder().description("Нужна отвертка").requestor(requestor)
             .created(LocalDateTime.now()).build();
+
     @BeforeEach
     void setUp() {
         userRepository.save(requestor);

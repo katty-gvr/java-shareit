@@ -48,6 +48,7 @@ public class IntCommentServiceImplTest {
         itemRepository.save(item);
         bookingRepository.save(booking);
     }
+
     @Test
     @Transactional
     public void testAddComment() {

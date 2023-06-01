@@ -8,7 +8,7 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
-import ru.practicum.shareit.item.model.Item;;
+import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,6 +71,6 @@ public class ItemMapper {
     }
 
     public static Set<ItemDto> toItemDtos(Set<Item> items) {
-        return items.stream().map(ItemMapper :: toItemDto).collect(Collectors.toSet());
+        return items.stream().map(ItemMapper::toItemDto).collect(Collectors.toSet());
     }
 }

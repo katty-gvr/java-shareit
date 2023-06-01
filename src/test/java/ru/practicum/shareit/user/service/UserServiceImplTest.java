@@ -28,7 +28,7 @@ public class UserServiceImplTest {
 
     @Test
     void testCreateUser() {
-        when (userRepository.save(any()))
+        when(userRepository.save(any()))
                 .thenReturn(UserMapper.toUser(userDto));
         UserDto savedUser = userService.addUser(userDto);
 
@@ -38,7 +38,7 @@ public class UserServiceImplTest {
 
     @Test
     void testGetUserById() {
-        when (userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(UserMapper.toUser(userDto)));
         UserDto dto = userService.getUserById(anyLong());
 
@@ -47,7 +47,7 @@ public class UserServiceImplTest {
 
     @Test
     void testGetByIdWithIncorrectParameter() {
-        when (userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenThrow(new UserNotFoundException("Пользователь не найден"));
 
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(anyLong()));
@@ -55,7 +55,7 @@ public class UserServiceImplTest {
 
     @Test
     void testFindAllUsers() {
-        when (userRepository.findAll()).thenReturn(List.of(UserMapper.toUser(userDto)));
+        when(userRepository.findAll()).thenReturn(List.of(UserMapper.toUser(userDto)));
 
         Collection<UserDto> allDtoUsers = userService.findAll();
 
@@ -65,7 +65,7 @@ public class UserServiceImplTest {
 
     @Test
     void testFindAllUsersWithEmptyList() {
-        when (userRepository.findAll()).thenReturn(Collections.emptyList());
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
         Collection<UserDto> allDtoUsers = userService.findAll();
 
@@ -75,7 +75,7 @@ public class UserServiceImplTest {
     @Test
     void testUpdateUser() {
         userDto.setName("NameUpdated");
-        when (userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(UserMapper.toUser(userDto)));
 
         UserDto updatedUserDto = userService.updateUser(userDto.getId(), userDto);
@@ -87,11 +87,10 @@ public class UserServiceImplTest {
 
     @Test
     void testUpdatedNotFoundUser() {
-        when (userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenThrow(new UserNotFoundException("Пользователь не найден"));
 
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(99L, userDto));
-
     }
 
     @Test

@@ -21,7 +21,7 @@ public class JsonBookingDtoTest {
 
     @Test
     void bookingDtoTest() throws Exception {
-        UserDto booker = UserDto.builder().id(1L).name("user1") .email("user@mail.ru").build();
+        UserDto booker = UserDto.builder().id(1L).name("user1").email("user@mail.ru").build();
 
         ItemDto item = ItemDto.builder().id(1L).name("ItemName").description("ItemDescription").available(true).build();
 

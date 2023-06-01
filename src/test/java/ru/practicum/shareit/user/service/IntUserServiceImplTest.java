@@ -24,6 +24,7 @@ public class IntUserServiceImplTest {
     @Autowired
     private UserServiceImpl userService;
     private final User user = User.builder().name("User").email("user@mail.ru").build();
+
     @BeforeEach
     void setUp() {
         userRepository.save(user);

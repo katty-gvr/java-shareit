@@ -73,7 +73,7 @@ public class ItemServiceImplTest {
 
     @Test
     public void testCreateWithWrongUser() {
-        when (userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenThrow(new UserNotFoundException("Пользователь не найден"));
 
         assertThrows(UserNotFoundException.class, () -> itemService.createItem(user.getId(), itemDto));
@@ -111,7 +111,7 @@ public class ItemServiceImplTest {
 
     @Test
     public void testGetUserItemsWithWrongUser() {
-        when (userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenThrow(new UserNotFoundException("Пользователь не найден"));
 
         assertThrows(UserNotFoundException.class, () -> itemService.getUserItems(99L, 0, 10));
@@ -141,7 +141,7 @@ public class ItemServiceImplTest {
 
     @Test
     public void testGetItemByIdWithIncorrectParameter() {
-        when (itemRepository.findById(anyLong()))
+        when(itemRepository.findById(anyLong()))
                 .thenThrow(new ItemNotFoundException("Вещь не найдена"));
 
         assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(99L, 1L));
@@ -149,7 +149,7 @@ public class ItemServiceImplTest {
 
     @Test
     public void testFindAllItems() {
-        when (itemRepository.findAll()).thenReturn(List.of(ItemMapper.toItem(itemDto)));
+        when(itemRepository.findAll()).thenReturn(List.of(ItemMapper.toItem(itemDto)));
 
         Collection<ItemDto> allDtoItems = itemService.findAll();
 
@@ -159,7 +159,7 @@ public class ItemServiceImplTest {
 
     @Test
     public void testFindAllItemsWithEmptyList() {
-        when (itemRepository.findAll()).thenReturn(Collections.emptyList());
+        when(itemRepository.findAll()).thenReturn(Collections.emptyList());
 
         Collection<ItemDto> allDtoItems = itemService.findAll();
 
