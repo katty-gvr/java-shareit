@@ -85,7 +85,8 @@ public class ItemRequestControllerTest {
 
         verify(requestService).getAllRequestsForAllUsers(anyLong(), anyInt(), anyInt());
     }
-    
+
+
     @Test
     void getRequestById() throws Exception {
         when(requestService.getRequestById(anyLong(), anyLong()))
