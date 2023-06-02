@@ -90,4 +90,14 @@ public class CommentServiceImplTest {
 
         assertThrows(CommentNotFoundException.class, () -> commentService.getCommentById(comment.getId()));
     }
+
+    @Test
+    void testCommentShortDto() {
+        CommentShortDto convertedCommentDto = CommentMapper.toCommentShortDto(comment);
+
+        assertNotNull(convertedCommentDto.getCreated());
+        assertEquals(comment.getText(), convertedCommentDto.getText());
+        assertEquals(comment.getAuthor().getName(), convertedCommentDto.getAuthorName());
+        assertEquals(comment.getItem().getId(), convertedCommentDto.getItemId());
+    }
 }
