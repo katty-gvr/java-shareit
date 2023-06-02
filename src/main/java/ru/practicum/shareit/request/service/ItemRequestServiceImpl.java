@@ -76,7 +76,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .filter(request -> !request.getRequestor().equals(requestor))
                 .collect(Collectors.toList());
         fillItemsByRequests(requests);
-        log.info("Список всех запросов успещно получен пользователем с id={}", userId);
+        log.info("Список всех запросов успешно получен пользователем с id={}", userId);
         return ItemRequestMapper.toItemRequestDtoListWithItems(requests);
     }
 

@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
@@ -47,10 +48,11 @@ public class UserServiceImplTest {
 
     @Test
     void testGetByIdWithIncorrectParameter() {
-        when(userRepository.findById(anyLong()))
-                .thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUserById(anyLong()));
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(100L));
+
+        verify(userRepository).findById(100L);
     }
 
     @Test
@@ -87,10 +89,12 @@ public class UserServiceImplTest {
 
     @Test
     void testUpdatedNotFoundUser() {
-        when(userRepository.findById(anyLong()))
-                .thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(99L, userDto));
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(100L, userDto));
+
+        verify(userRepository).findById(100L);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test

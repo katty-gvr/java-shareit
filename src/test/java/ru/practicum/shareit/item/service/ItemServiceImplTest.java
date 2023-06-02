@@ -73,10 +73,12 @@ public class ItemServiceImplTest {
 
     @Test
     public void testCreateWithWrongUser() {
-        when(userRepository.findById(anyLong()))
-                .thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> itemService.createItem(user.getId(), itemDto));
+        assertThrows(UserNotFoundException.class, () -> itemService.createItem(100L, itemDto));
+
+        verify(userRepository).findById(100L);
+        verify(itemRepository, never()).save(any(Item.class));
     }
 
     @Test
@@ -111,10 +113,11 @@ public class ItemServiceImplTest {
 
     @Test
     public void testGetUserItemsWithWrongUser() {
-        when(userRepository.findById(anyLong()))
-                .thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> itemService.getUserItems(99L, 0, 10));
+        assertThrows(UserNotFoundException.class, () -> itemService.getUserItems(100L, 0, 10));
+
+        verify(userRepository).findById(100L);
     }
 
     @Test
@@ -140,11 +143,12 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testGetItemByIdWithIncorrectParameter() {
-        when(itemRepository.findById(anyLong()))
-                .thenThrow(new ItemNotFoundException("Вещь не найдена"));
+    public void testGetItemByIdWithWrongItem() {
+        when(itemRepository.findById(100L)).thenReturn(Optional.empty());
 
-        assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(99L, 1L));
+        assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(100L, 1L));
+
+        verify(itemRepository).findById(100L);
     }
 
     @Test
@@ -189,7 +193,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testUpdateItemWithWrongUser() {
+    public void testUpdateItemWithUserNotOwner() {
         User userNotOwner = new User(2L, "user2", "user2@mail.ru");
         Item item =  Item.builder().id(1L).name("item2Name").description("item2Desc").available(true)
                 .owner(user).requestId(1L).build();

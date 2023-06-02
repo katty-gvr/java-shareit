@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.RequestNotFoundException;
 import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -66,10 +67,19 @@ public class ItemRequestServiceImplTest {
 
     @Test
     void testAddNewRequestWithWrongUser() {
-        when(userRepository.findById(anyLong())).thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> requestService.addNewRequest(requestDto, 100L));
         verify(userRepository).findById(100L);
+        verify(requestRepository, never()).save(any(ItemRequest.class));
+    }
+
+    @Test
+    void testAddNewRequestWithIncorrectUserId() {
+        when(userRepository.findById(anyLong())).thenThrow(new BadRequestException("Некорректный ввод id пользователя"));
+
+        assertThrows(BadRequestException.class, () -> requestService.addNewRequest(requestDto, -1L));
+        verify(userRepository).findById(-1L);
         verify(requestRepository, never()).save(any(ItemRequest.class));
     }
 
@@ -97,12 +107,22 @@ public class ItemRequestServiceImplTest {
 
     @Test
     void testGetUserRequestsWithWrongUser() {
-        when(userRepository.findById(anyLong())).thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> requestService.getUserRequests(100L));
 
         verify(userRepository).findById(100L);
         verify(requestRepository, never()).findAllByRequestorOrderByCreated(any(User.class));
+    }
+
+    @Test
+    void testGetUserRequestsWithIncorrectUserId() {
+        when(userRepository.findById(anyLong())).thenThrow(new BadRequestException("Некорректный ввод id пользователя"));
+
+        assertThrows(BadRequestException.class, () -> requestService.getUserRequests(-1L));
+        verify(userRepository).findById(-1L);
+        verify(requestRepository, never()).findAllByRequestorOrderByCreated(any(User.class));
+
     }
 
     @Test
@@ -125,11 +145,20 @@ public class ItemRequestServiceImplTest {
 
     @Test
     void testGetRequestByIdWithWrongUser() {
-        when(userRepository.findById(anyLong())).thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> requestService.getRequestById(100L, anyLong()));
 
         verify(userRepository).findById(100L);
+        verify(requestRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void testGetRequestByIdWithIncorrectUserId() {
+        when(userRepository.findById(anyLong())).thenThrow(new BadRequestException("Некорректный ввод id пользователя"));
+
+        assertThrows(BadRequestException.class, () -> requestService.getRequestById(-1L, anyLong()));
+        verify(userRepository).findById(-1L);
         verify(requestRepository, never()).findById(anyLong());
     }
 
@@ -142,6 +171,17 @@ public class ItemRequestServiceImplTest {
 
         verify(userRepository).findById(anyLong());
         verify(requestRepository).findById(100L);
+    }
+
+    @Test
+    void testGetRequestByIdWithIncorrectRequestId() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(requestor));
+        when(requestRepository.findById(anyLong())).thenThrow(new BadRequestException("Некорректный ввод id запроса"));
+
+        assertThrows(BadRequestException.class, () -> requestService.getRequestById(anyLong(), -1L));
+
+        verify(userRepository).findById(anyLong());
+        verify(requestRepository).findById(-1L);
     }
 
     @Test
@@ -169,11 +209,21 @@ public class ItemRequestServiceImplTest {
 
     @Test
     void testGetAllRequestsForAllUsersWithWrongUser() {
-        when(userRepository.findById(100L)).thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> requestService.getAllRequestsForAllUsers(100L, 0, 10));
 
         verify(userRepository).findById(100L);
+        verify(requestRepository, never()).findAll(any(PageRequest.class));
+    }
+
+    @Test
+    void testGetAllRequestsForAllUsersWithIncorrectUserId() {
+        when(userRepository.findById(anyLong())).thenThrow(new BadRequestException("Некорректный ввод id пользователя"));
+
+        assertThrows(BadRequestException.class, () -> requestService.getAllRequestsForAllUsers(-1L, 0, 10));
+
+        verify(userRepository).findById(-1L);
         verify(requestRepository, never()).findAll(any(PageRequest.class));
     }
 }

@@ -36,7 +36,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDto createBooking(Long userId, BookingShortDto bookingShortDto) {
-        User booker = userRepository.findById(userId).orElseThrow();
+        User booker = userRepository.findById(userId).orElseThrow(() ->
+                new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId)));
         Item item = itemRepository.findById(bookingShortDto.getItemId()).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Вещь не найдена", bookingShortDto.getItemId())));
         if (!item.getAvailable()) {

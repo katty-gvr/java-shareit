@@ -78,10 +78,11 @@ public class BookingServiceImplTest {
     @Test
     void testCreateBookingWithWrongBookerId() {
         Long wrongBookerId = 100L;
-        when(userRepository.findById(wrongBookerId)).thenThrow(new UserNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(wrongBookerId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> bookingService.createBooking(wrongBookerId, bookingShortDto));
 
+        verify(userRepository).findById(wrongBookerId);
         verify(bookingRepository, never()).save(any());
     }
 
@@ -91,7 +92,7 @@ public class BookingServiceImplTest {
         bookingShortDto.setItemId(wrongItemId);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
-        when(itemRepository.findById(wrongItemId)).thenThrow(new ItemNotFoundException("Вещь не найдена"));
+        when(itemRepository.findById(wrongItemId)).thenReturn(Optional.empty());
 
         assertThrows(ItemNotFoundException.class, () -> bookingService.createBooking(anyLong(), bookingShortDto));
 
@@ -163,11 +164,12 @@ public class BookingServiceImplTest {
     @Test
     void testApproveBookingWithWrongBookingId() {
         Long wrongBookingId = 100L;
-        when(bookingRepository.findById(wrongBookingId)).thenThrow(new BookingNotFoundException("Бронирование не найдено"));
+        when(bookingRepository.findById(wrongBookingId)).thenReturn(Optional.empty());
 
         assertThrows(BookingNotFoundException.class, () ->
                 bookingService.approveBooking(wrongBookingId, booking.getItem().getOwner().getId(), true));
 
+        verify(bookingRepository).findById(wrongBookingId);
         verify(bookingRepository, never()).save(any());
     }
 
