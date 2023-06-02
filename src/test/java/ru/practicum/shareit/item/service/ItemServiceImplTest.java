@@ -6,12 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ItemCannotBeUpdatedException;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -50,7 +51,7 @@ public class ItemServiceImplTest {
     private final ItemRequest request = ItemRequest.builder().id(itemDto.getRequestId()).build();
 
     @Test
-    public void testCreateItem() {
+    void testCreateItem() {
         Item item = ItemMapper.toItem(itemDto);
 
         item.setOwner(user);
@@ -72,7 +73,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testCreateWithWrongUser() {
+    void testCreateWithWrongUser() {
         when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> itemService.createItem(100L, itemDto));
@@ -80,6 +81,26 @@ public class ItemServiceImplTest {
         verify(userRepository).findById(100L);
         verify(itemRepository, never()).save(any(Item.class));
     }
+
+    @Test
+    void createItemWithWrongRequestId() {
+        ItemDto itemDtoWithBadRequestId = ItemDto.builder().id(1L).name("itemName").description("itemDesc")
+                .available(true).requestId(100L).build();
+
+        Item item = ItemMapper.toItem(itemDto);
+        item.setOwner(user);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(requestRepository.findById(itemDtoWithBadRequestId.getRequestId())).thenReturn(Optional.empty());
+
+        assertThrows(RequestNotFoundException.class, () ->
+                itemService.createItem(user.getId(), itemDtoWithBadRequestId));
+
+        verify(userRepository).findById(user.getId());
+        verify(requestRepository).findById(100L);
+        verify(itemRepository, never()).save(any(Item.class));
+    }
+
 
     @Test
     void testGetUserItems() {
@@ -112,7 +133,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testGetUserItemsWithWrongUser() {
+    void testGetUserItemsWithWrongUser() {
         when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> itemService.getUserItems(100L, 0, 10));
@@ -121,7 +142,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testGetItemById() {
+    void testGetItemById() {
         Item item = Item.builder().id(1L).name("item2Name").description("item2Desc").available(true)
                 .owner(user).requestId(1L).build();
         List<Comment> comments = new ArrayList<>();
@@ -143,7 +164,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testGetItemByIdWithWrongItem() {
+    void testGetItemByIdWithWrongItem() {
         when(itemRepository.findById(100L)).thenReturn(Optional.empty());
 
         assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(100L, 1L));
@@ -152,7 +173,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testFindAllItems() {
+    void testFindAllItems() {
         when(itemRepository.findAll()).thenReturn(List.of(ItemMapper.toItem(itemDto)));
 
         Collection<ItemDto> allDtoItems = itemService.findAll();
@@ -162,7 +183,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testFindAllItemsWithEmptyList() {
+    void testFindAllItemsWithEmptyList() {
         when(itemRepository.findAll()).thenReturn(Collections.emptyList());
 
         Collection<ItemDto> allDtoItems = itemService.findAll();
@@ -171,7 +192,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testUpdateItem() {
+    void testUpdateItem() {
         Item item =  Item.builder().id(1L).name("item2Name").description("item2Desc").available(true)
                 .owner(user).requestId(1L).build();
         ItemDto itemDto = ItemMapper.toItemDto(item);
@@ -193,7 +214,7 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testUpdateItemWithUserNotOwner() {
+    void testUpdateItemWithUserNotOwner() {
         User userNotOwner = new User(2L, "user2", "user2@mail.ru");
         Item item =  Item.builder().id(1L).name("item2Name").description("item2Desc").available(true)
                 .owner(user).requestId(1L).build();
@@ -211,13 +232,32 @@ public class ItemServiceImplTest {
     }
 
     @Test
-    public void testDeleteItem() {
+    void testDeleteItem() {
         Item item =  Item.builder().id(1L).name("item2Name").description("item2Desc").available(true)
                 .owner(user).requestId(1L).build();
         itemService.deleteItem(item.getId());
 
-        verify(itemRepository, times(1)).deleteById(item.getId());
         assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(1L, 1L));
+
+        verify(itemRepository, times(1)).deleteById(item.getId());
+    }
+
+    @Test
+    void searchItem() {
+        ItemDto itemDtoForSearch = ItemDto.builder().id(2L).name("Щетка для обуви").description("Хорошо чистит")
+            .available(true).build();
+        Item itemForSearch = Item.builder().id(2L).name("Щетка для обуви").description("Хорошо чистит")
+            .available(true).build();
+
+        when(itemRepository.search("щетка", PageRequest.of(0, 10, Sort.by("name").ascending())))
+            .thenReturn(List.of(itemForSearch));
+
+        Collection<ItemDto> actualItems = itemService.searchItem("щетка", 0, 10);
+
+        assertEquals(1, actualItems.size());
+        assertTrue(actualItems.contains(itemDtoForSearch));
+
+        verify(itemRepository).search("щетка", PageRequest.of(0, 10, Sort.by("name").ascending()));
     }
 }
 

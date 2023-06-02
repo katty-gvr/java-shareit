@@ -180,6 +180,21 @@ public class ItemControllerTest {
     }
 
     @Test
+    void searchItemWithIncorrectParameter() throws Exception {
+        ItemDto dtoForSearch = ItemDto.builder().id(2L).name("Щетка для обуви").description("Хорошо чистит").available(true)
+                .build();
+        when(itemService.searchItem(anyString(), anyInt(), anyInt()))
+                .thenReturn(List.of(dtoForSearch));
+
+        mockMvc.perform(get("/items/search")
+                        .param("text", ""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(itemService, never()).searchItem(anyString(), anyInt(), anyInt());
+    }
+
+    @Test
     void searchItemWithIncorrectPageParameters() throws Exception {
         int invalidPage = -1;
         int invalidSize = -10;
