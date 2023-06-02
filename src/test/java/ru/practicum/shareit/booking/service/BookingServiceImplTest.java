@@ -13,10 +13,7 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.BookingException;
-import ru.practicum.shareit.exception.BookingNotFoundException;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
@@ -121,6 +118,37 @@ public class BookingServiceImplTest {
         assertThrows(BookingNotFoundException.class, () -> bookingService.createBooking(booker.getId(), bookingShortDto));
 
         verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void testCreateBookingWithIncorrectBookingTime() {
+        BookingShortDto bookingWithNullTime = BookingShortDto.builder().id(2L).start(null)
+                .end(null).itemId(1L).bookerId(2L).build();
+        BookingShortDto bookingWithIncorrectEnd = BookingShortDto.builder().id(2L).start(now.plusHours(1))
+                .end(now.minusHours(5)).itemId(1L).bookerId(2L).build();
+        BookingShortDto bookingWithIncorrectStart = BookingShortDto.builder().id(1L).start(now.minusHours(2))
+                .end(now.plusHours(2)).itemId(1L).bookerId(2L).build();
+        BookingShortDto bookingWithStartEqualsEnd = BookingShortDto.builder().id(1L).start(now.plusHours(1))
+                .end(now.plusHours(1)).itemId(1L).bookerId(2L).build();
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
+                bookingWithNullTime));
+        verify(bookingRepository, never()).save(any(Booking.class));
+
+        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
+                bookingWithIncorrectEnd));
+        verify(bookingRepository, never()).save(any(Booking.class));
+
+        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
+                bookingWithIncorrectStart));
+        verify(bookingRepository, never()).save(any(Booking.class));
+
+        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
+                bookingWithStartEqualsEnd));
+        verify(bookingRepository, never()).save(any(Booking.class));
     }
 
     @Test
@@ -260,7 +288,7 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    void testGetBookingsForUserItems() {
+    void testGetBookingsForUserItemsWithWaitingStatus() {
         List<Booking> userBookings = new ArrayList<>();
         userBookings.add(new Booking(1L, now.plusHours(1), now.plusHours(2), item, booker, BookingStatus.WAITING));
         userBookings.add(new Booking(2L, now.plusHours(3), now.plusHours(4), item, booker, BookingStatus.APPROVED));
@@ -272,5 +300,55 @@ public class BookingServiceImplTest {
 
         assertEquals(1, results.size());
         assertEquals(BookingStatus.WAITING, results.iterator().next().getStatus());
+    }
+
+    @Test
+    void testGetBookingsForUserItemsWithPastStatus() {
+        List<Booking> userBookings = new ArrayList<>();
+        userBookings.add(new Booking(1L, now.minusDays(2), now.minusDays(1), item, booker, BookingStatus.APPROVED));
+        userBookings.add(new Booking(2L, now.minusDays(5), now.minusDays(4), item, booker, BookingStatus.APPROVED));
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
+
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "PAST", 0, 10);
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    void testGetBookingsForUserItemsWithFutureStatus() {
+        List<Booking> userBookings = new ArrayList<>();
+        userBookings.add(new Booking(1L, now.plusDays(2), now.plusDays(1), item, booker, BookingStatus.APPROVED));
+        userBookings.add(new Booking(2L, now.plusDays(5), now.plusDays(4), item, booker, BookingStatus.APPROVED));
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
+
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "FUTURE", 0, 10);
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    void testGetBookingsForUserItemsWithRejectedStatus() {
+        List<Booking> userBookings = new ArrayList<>();
+        userBookings.add(new Booking(1L, now.minusDays(2), now.minusDays(1), item, booker, BookingStatus.REJECTED));
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
+
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "REJECTED", 0, 10);
+
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    void testGetBookingsForUserItemsWithIncorrectStatus() {
+        List<Booking> userBookings = new ArrayList<>();
+        userBookings.add(new Booking(1L, now.minusDays(2), now.minusDays(1), item, booker, BookingStatus.REJECTED));
+
+        assertThrows(BadRequestException.class, () -> bookingService.getBookingsForUserItems(owner.getId(),
+                "INCORRECT", 0, 10));
     }
 }
