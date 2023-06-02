@@ -351,4 +351,15 @@ public class BookingServiceImplTest {
         assertThrows(BadRequestException.class, () -> bookingService.getBookingsForUserItems(owner.getId(),
                 "INCORRECT", 0, 10));
     }
+
+    @Test
+    void testBookingShortDto() {
+        BookingShortDto convertedDto = BookingMapper.toShortBookingDto(booking);
+
+        assertNotNull(convertedDto.getStart());
+        assertNotNull(convertedDto.getEnd());
+        assertEquals(booking.getItem().getId(), convertedDto.getItemId());
+        assertEquals(booking.getBooker().getId(), convertedDto.getBookerId());
+        assertEquals(booking.getStatus().toString(), convertedDto.getStatus());
+    }
 }
