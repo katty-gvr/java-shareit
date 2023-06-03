@@ -25,6 +25,8 @@ public class BookingMapper {
                 .id(booking.getId())
                 .start(LocalDateTime.parse(booking.getStart().format(DATE_TIME_FORMAT)))
                 .end(LocalDateTime.parse(booking.getEnd().format(DATE_TIME_FORMAT)))
+                .start(booking.getStart())
+                .end(booking.getEnd())
                 .item(itemDto)
                 .booker(bookerDto)
                 .status(booking.getStatus())
@@ -36,6 +38,8 @@ public class BookingMapper {
                 .id(booking.getId())
                 .start(LocalDateTime.parse(booking.getStart().format(DATE_TIME_FORMAT)))
                 .end(LocalDateTime.parse(booking.getEnd().format(DATE_TIME_FORMAT)))
+                .start(booking.getStart())
+                .end(booking.getEnd())
                 .itemId(booking.getItem().getId())
                 .bookerId(booking.getBooker().getId())
                 .status(booking.getStatus().name())
@@ -45,8 +49,8 @@ public class BookingMapper {
     public static Booking toBooking(BookingShortDto bookingShortDto) {
         return Booking.builder()
                 .id(bookingShortDto.getId())
-                .start(LocalDateTime.parse(bookingShortDto.getStart().format(DATE_TIME_FORMAT)))
-                .end(LocalDateTime.parse(bookingShortDto.getEnd().format(DATE_TIME_FORMAT)))
+                .start(bookingShortDto.getStart())
+                .end(bookingShortDto.getEnd())
                 .status(BookingStatus.WAITING)
                 .build();
     }

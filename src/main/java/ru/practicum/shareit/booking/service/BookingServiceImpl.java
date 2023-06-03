@@ -39,7 +39,7 @@ public class BookingServiceImpl implements BookingService {
         User booker = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId)));
         Item item = itemRepository.findById(bookingShortDto.getItemId()).orElseThrow(() ->
-                new ItemNotFoundException(String.format("Вещь не найдена", bookingShortDto.getItemId())));
+                new ItemNotFoundException(String.format("Вещь c id=%d не найдена", bookingShortDto.getItemId())));
         if (!item.getAvailable()) {
             throw new BookingException("Данная вещь недоступна для бронирования!");
         }

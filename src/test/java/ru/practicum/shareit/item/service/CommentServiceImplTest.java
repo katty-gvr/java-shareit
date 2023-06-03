@@ -16,7 +16,9 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -32,7 +34,9 @@ public class CommentServiceImplTest {
     @Mock
     private BookingRepository bookingRepository;
     @Mock
-    private CommentMapper commentMapper;
+    private ItemRepository itemRepository;
+    @Mock
+    private UserRepository userRepository;
     @InjectMocks
     private CommentServiceImpl commentService;
     private final User user = new User(1L, "user", "user@mail.ru");
@@ -48,9 +52,9 @@ public class CommentServiceImplTest {
     @Test
     public void testAddNewComment() {
         when(bookingRepository.existsBookingByItemAndBookerAndStatusNotAndStart(any(), any(), any())).thenReturn(true);
-        when(commentMapper.toComment(any(), anyLong(), anyLong())).thenReturn(comment);
-        when(commentMapper.toCommentDto(any())).thenReturn(commentDto);
-        when(commentRepository.save(comment)).thenReturn(comment);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(commentRepository.save(any())).thenReturn(comment);
 
         CommentDto addedComment = commentService.addNewComment(commentShortDto, item.getId(), user.getId());
 
@@ -60,13 +64,14 @@ public class CommentServiceImplTest {
         assertEquals(comment.getItem().getId(), addedComment.getItem().getId());
 
         verify(bookingRepository).existsBookingByItemAndBookerAndStatusNotAndStart(eq(item), eq(user), any());
-        verify(commentRepository).save(comment);
+        verify(commentRepository).save(any());
     }
 
     @Test
     public void testAddNewCommentWithWrongBooking() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
         when(bookingRepository.existsBookingByItemAndBookerAndStatusNotAndStart(any(), any(), any())).thenReturn(false);
-        when(commentMapper.toComment(any(), anyLong(), anyLong())).thenReturn(comment);
 
         assertThrows(BadRequestException.class, () -> commentService.addNewComment(commentShortDto, item.getId(), user.getId()));
 
@@ -77,7 +82,6 @@ public class CommentServiceImplTest {
     @Test
     public void testGetCommentById() {
         when(commentRepository.findById(anyLong())).thenReturn(Optional.of(comment));
-        when(commentMapper.toCommentDto(any())).thenReturn(commentDto);
 
         CommentDto actualCommentDto = commentService.getCommentById(comment.getId());
 

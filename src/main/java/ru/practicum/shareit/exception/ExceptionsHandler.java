@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
+
 @RestControllerAdvice
 @Slf4j
 public class ExceptionsHandler {
@@ -63,6 +65,13 @@ public class ExceptionsHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleRequestNotFoundException(final RequestNotFoundException e) {
         log.info("Request not found error: {}", e.getMessage());
+        return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConstraintViolationException(final ConstraintViolationException e) {
+        log.info("Error of input data validation: {}", e.getMessage());
         return new ErrorResponse("Ошибка валидации данных: " + e.getMessage());
     }
 }

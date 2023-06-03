@@ -1,15 +1,18 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.exception.BadRequestException;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 
 @RestController
+@Validated
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 public class BookingController {
@@ -39,22 +42,24 @@ public class BookingController {
     @GetMapping
     public Collection<BookingDto> getUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                   @RequestParam(defaultValue = "ALL")String state,
-                                                  @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
-                                                  @RequestParam(value = "size", required = false, defaultValue = "10") final Integer size) {
-        if (from < 0 || size < 0) {
-            throw new BadRequestException("Некорректно переданный параметр запроса");
-        }
+                                                  @RequestParam(value = "from", required = false, defaultValue = "0")
+                                                      @PositiveOrZero(message = "Значение 'from' должно быть положительным")
+                                                      final Integer from,
+                                                  @RequestParam(value = "size", required = false, defaultValue = "10")
+                                                      @Positive(message = "Значение 'size' должно быть положительным")
+                                                      final Integer size) {
         return bookingService.getAllBookingsByUser(userId, state, from, size);
     }
 
     @GetMapping("/owner")
     public Collection<BookingDto> getBookingsForUserItems(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                           @RequestParam(defaultValue = "ALL")String state,
-                                                          @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
-                                                          @RequestParam(value = "size", required = false, defaultValue = "10") final Integer size) {
-        if (from < 0 || size < 0) {
-            throw new BadRequestException("Некорректно переданный параметр запроса");
-        }
+                                                          @RequestParam(value = "from", required = false, defaultValue = "0")
+                                                              @PositiveOrZero(message = "Значение 'from' должно быть положительным")
+                                                              final Integer from,
+                                                          @RequestParam(value = "size", required = false, defaultValue = "10")
+                                                              @Positive(message = "Значение 'size' должно быть положительным")
+                                                              final Integer size) {
         return bookingService.getBookingsForUserItems(userId, state, from, size);
     }
 }

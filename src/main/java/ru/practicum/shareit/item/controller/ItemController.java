@@ -12,10 +12,13 @@ import ru.practicum.shareit.common.Update;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 import java.util.Collections;
 
 @RestController
+@Validated
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
@@ -43,21 +46,23 @@ public class ItemController {
 
     @GetMapping
     public Collection<ItemDto> getUserItems(@RequestHeader("X-Sharer-User-Id") final Long userId,
-                                            @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
-                                            @RequestParam(value = "size", required = false, defaultValue = "10") final Integer size) {
-        if (from < 0 || size < 0) {
-            throw new BadRequestException("Некорректно переданный параметр запроса");
-        }
+                                            @RequestParam(value = "from", required = false, defaultValue = "0")
+                                            @PositiveOrZero(message = "Значение 'from' должно быть положительным")
+                                            final Integer from,
+                                            @RequestParam(value = "size", required = false, defaultValue = "10")
+                                                @Positive(message = "Значение 'size' должно быть положительным")
+                                                final Integer size) {
         return itemService.getUserItems(userId, from, size);
     }
 
     @GetMapping("/search")
     public Collection<ItemDto> searchItem(@RequestParam("text") final String text,
-                                          @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
-                                          @RequestParam(value = "size", required = false, defaultValue = "10") final Integer size) {
-        if (from < 0 || size < 0) {
-            throw new BadRequestException("Некорректно переданный параметр запроса");
-        }
+                                          @RequestParam(value = "from", required = false, defaultValue = "0")
+                                          @PositiveOrZero(message = "Значение 'from' должно быть положительным")
+                                          final Integer from,
+                                          @RequestParam(value = "size", required = false, defaultValue = "10")
+                                              @Positive(message = "Значение 'size' должно быть положительным")
+                                              final Integer size) {
         if (text == null || text.isBlank()) {
             return Collections.emptyList();
         }
