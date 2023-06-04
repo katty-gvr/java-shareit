@@ -45,9 +45,7 @@ public class CommentServiceImpl implements CommentService {
                 new ItemNotFoundException(String.format("Вещь c id=%d не найдена", itemId)));
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId)));
-        Comment comment = CommentMapper.toComment(commentDto);
-        comment.setItem(item);
-        comment.setAuthor(user);
+        Comment comment = CommentMapper.toComment(commentDto, item, user);
         if (!bookingRepository.existsBookingByItemAndBookerAndStatusNotAndStart(comment.getItem(),
                 comment.getAuthor(), LocalDateTime.now())) {
             throw new BadRequestException("Нельзя оставить комменатрий к вещи, если она не была взята в аренду" +

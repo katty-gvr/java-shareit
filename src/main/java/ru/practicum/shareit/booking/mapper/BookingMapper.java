@@ -11,10 +11,6 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 
-import java.time.LocalDateTime;
-
-import static ru.practicum.shareit.common.DateTimeParameters.DATE_TIME_FORMAT;
-
 @Component
 @RequiredArgsConstructor
 public class BookingMapper {
@@ -23,8 +19,6 @@ public class BookingMapper {
         UserDto bookerDto = UserMapper.toUserDto(booking.getBooker());
         return BookingDto.builder()
                 .id(booking.getId())
-                .start(LocalDateTime.parse(booking.getStart().format(DATE_TIME_FORMAT)))
-                .end(LocalDateTime.parse(booking.getEnd().format(DATE_TIME_FORMAT)))
                 .start(booking.getStart())
                 .end(booking.getEnd())
                 .item(itemDto)
@@ -36,8 +30,6 @@ public class BookingMapper {
     public static BookingShortDto toShortBookingDto(Booking booking) {
         return BookingShortDto.builder()
                 .id(booking.getId())
-                .start(LocalDateTime.parse(booking.getStart().format(DATE_TIME_FORMAT)))
-                .end(LocalDateTime.parse(booking.getEnd().format(DATE_TIME_FORMAT)))
                 .start(booking.getStart())
                 .end(booking.getEnd())
                 .itemId(booking.getItem().getId())
