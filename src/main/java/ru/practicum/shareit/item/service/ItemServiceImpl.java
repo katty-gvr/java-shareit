@@ -2,12 +2,13 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.booking.service.StateOfBookingRequest;
 import ru.practicum.shareit.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.RequestNotFoundException;
 import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.exception.ItemCannotBeUpdatedException;
@@ -16,15 +17,14 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +36,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository requestRepository;
 
     @Override
     public Collection<ItemDto> findAll() {
@@ -46,10 +47,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> getUserItems(Long userId) {
+    public Collection<ItemDto> getUserItems(Long userId, Integer from, Integer size) {
         User owner = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId)));
-        List<Item> userItem = itemRepository.findByOwner(owner);
+
+        PageRequest page = PageRequest.of(from / size, size);
+        List<Item> userItem = itemRepository.findByOwner(owner, page);
         return userItem.stream().map(item ->
                         ItemMapper.toItemDto(item, commentRepository.findByItemOrderByIdAsc(item), bookingRepository.findByItem(item)))
                 .sorted(this::compareBookingDates).collect(Collectors.toList());
@@ -62,6 +65,10 @@ public class ItemServiceImpl implements ItemService {
         User owner = userOptional.orElseThrow(() -> new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId)));
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(owner);
+        if (item.getRequestId() != null) {
+            requestRepository.findById(item.getRequestId()).orElseThrow(() ->
+                    new RequestNotFoundException(String.format("Запрос с id=%d не найден", item.getRequestId())));
+        }
         itemRepository.save(item);
         log.info("Пользователь с id={} добавил новую вещь", owner.getId());
         return ItemMapper.toItemDto(item);
@@ -98,8 +105,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> searchItem(String word) {
-        return itemRepository.search(word).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+    public Collection<ItemDto> searchItem(String word, Integer from, Integer size) {
+        PageRequest page = PageRequest.of(from / size, size, Sort.by("name").ascending());
+        return itemRepository.search(word, page).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Override
@@ -113,29 +121,5 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto1.getNextBooking() == null) return 1;
         if (itemDto2.getNextBooking() == null) return -1;
         return -itemDto1.getNextBooking().getStart().compareTo(itemDto2.getNextBooking().getStart());
-    }
-
-    private List<Booking> getBookingsByState(Collection<Booking> allBookings, StateOfBookingRequest state) {
-        Stream<Booking> bookingStream = allBookings.stream();
-        LocalDateTime now = LocalDateTime.now();
-        switch (state) {
-            case CURRENT:
-                bookingStream = bookingStream.filter(booking -> booking.getStart().isBefore(now) &&
-                        booking.getEnd().isAfter(now));
-                break;
-            case PAST:
-                bookingStream = bookingStream.filter(booking -> booking.getEnd().isBefore(now));
-                break;
-            case FUTURE:
-                bookingStream = bookingStream.filter(booking -> booking.getStart().isAfter(now));
-                break;
-            case WAITING:
-                bookingStream = bookingStream.filter(booking -> booking.getStatus().equals(BookingStatus.WAITING));
-                break;
-            case REJECTED:
-                bookingStream = bookingStream.filter(booking -> booking.getStatus().equals(BookingStatus.REJECTED));
-                break;
-        }
-        return bookingStream.sorted(Comparator.comparing(Booking::getStart).reversed()).collect(Collectors.toList());
     }
 }

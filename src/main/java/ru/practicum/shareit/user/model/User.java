@@ -20,6 +20,7 @@ public class User {
     private Long id;
 
     @Column(name = "name", nullable = false)
+    @NotNull
     private String name;
 
     @NotNull(message = "Email пользователя должен быть задан")
