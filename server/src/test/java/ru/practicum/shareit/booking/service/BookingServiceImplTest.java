@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -59,7 +60,7 @@ public class BookingServiceImplTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
         when(bookingRepository.save(any())).thenReturn(booking);
 
-        BookingShortDto actualBookingDto = bookingService.createBooking(booker.getId(), bookingShortDto);
+        BookingDto actualBookingDto = bookingService.createBooking(booker.getId(), bookingShortDto);
 
         assertEquals(bookingShortDto.getId(), actualBookingDto.getId());
         assertNotNull(actualBookingDto.getStart());
@@ -156,7 +157,7 @@ public class BookingServiceImplTest {
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
-        BookingShortDto actualDto = bookingService.approveBooking(booking.getId(), bookingItemOwner, true);
+        BookingDto actualDto = bookingService.approveBooking(booking.getId(), bookingItemOwner, true);
 
         assertEquals(booking.getId(), actualDto.getId());
         assertEquals(booking.getStart(), actualDto.getStart());
@@ -176,7 +177,7 @@ public class BookingServiceImplTest {
         Long bookingItemOwner = booking.getItem().getOwner().getId();
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
-        BookingShortDto actualDto = bookingService.approveBooking(booking.getId(), bookingItemOwner, false);
+        BookingDto actualDto = bookingService.approveBooking(booking.getId(), bookingItemOwner, false);
 
         assertEquals(booking.getId(), actualDto.getId());
         assertEquals(booking.getStart(), actualDto.getStart());
@@ -231,7 +232,7 @@ public class BookingServiceImplTest {
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
-        BookingShortDto actualDto = bookingService.getBooking(booking.getId(), bookingItemOwner);
+        BookingDto actualDto = bookingService.getBooking(booking.getId(), bookingItemOwner);
 
         assertEquals(booking.getId(), actualDto.getId());
         assertEquals(booking.getStart(), actualDto.getStart());
@@ -248,7 +249,7 @@ public class BookingServiceImplTest {
         Long bookerId = booking.getBooker().getId();
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
-        BookingShortDto actualDto = bookingService.getBooking(booking.getId(), bookerId);
+        BookingDto actualDto = bookingService.getBooking(booking.getId(), bookerId);
 
         assertEquals(booking.getId(), actualDto.getId());
         assertEquals(booking.getStart(), actualDto.getStart());
@@ -278,7 +279,7 @@ public class BookingServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findByBooker(any(User.class), any(Pageable.class))).thenReturn(userBookings);
 
-        Collection<BookingShortDto> results = bookingService.getAllBookingsByUser(booker.getId(), "WAITING", 0, 10);
+        Collection<BookingDto> results = bookingService.getAllBookingsByUser(booker.getId(), "WAITING", 0, 10);
 
         assertEquals(1, results.size());
         assertEquals(BookingStatus.WAITING, results.iterator().next().getStatus());
@@ -295,7 +296,7 @@ public class BookingServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
 
-        Collection<BookingShortDto> results = bookingService.getBookingsForUserItems(owner.getId(), "WAITING", 0, 10);
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "WAITING", 0, 10);
 
         assertEquals(1, results.size());
         assertEquals(BookingStatus.WAITING, results.iterator().next().getStatus());
@@ -310,7 +311,7 @@ public class BookingServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
 
-        Collection<BookingShortDto> results = bookingService.getBookingsForUserItems(owner.getId(), "PAST", 0, 10);
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "PAST", 0, 10);
 
         assertEquals(2, results.size());
     }
@@ -324,7 +325,7 @@ public class BookingServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
 
-        Collection<BookingShortDto> results = bookingService.getBookingsForUserItems(owner.getId(), "FUTURE", 0, 10);
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "FUTURE", 0, 10);
 
         assertEquals(2, results.size());
     }
@@ -337,7 +338,7 @@ public class BookingServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(userBookings);
 
-        Collection<BookingShortDto> results = bookingService.getBookingsForUserItems(owner.getId(), "REJECTED", 0, 10);
+        Collection<BookingDto> results = bookingService.getBookingsForUserItems(owner.getId(), "REJECTED", 0, 10);
 
         assertEquals(1, results.size());
     }

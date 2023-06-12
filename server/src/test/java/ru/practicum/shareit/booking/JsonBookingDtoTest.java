@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @JsonTest
 public class JsonBookingDtoTest {
     @Autowired
-    JacksonTester<BookingShortDto> jacksonTester;
+    JacksonTester<BookingDto> jacksonTester;
 
     @Autowired
     JacksonTester<BookingShortDto> jacksonTesterForShort;
@@ -29,12 +30,12 @@ public class JsonBookingDtoTest {
 
         ItemDto item = ItemDto.builder().id(1L).name("ItemName").description("ItemDescription").available(true).build();
 
-        BookingShortDto booking = BookingShortDto.builder().id(1L)
+        BookingDto booking = BookingDto.builder().id(1L)
                 .start(LocalDateTime.of(2023, 6, 2, 12, 0, 0))
                 .end(LocalDateTime.of(2023, 6, 5, 12, 0, 0))
                 .item(item).booker(booker).status(BookingStatus.WAITING).build();
 
-        JsonContent<BookingShortDto> actualDto = jacksonTester.write(booking);
+        JsonContent<BookingDto> actualDto = jacksonTester.write(booking);
 
         assertThat(actualDto).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(actualDto).extractingJsonPathStringValue("$.start").isEqualTo("2023-06-02T12:00:00");

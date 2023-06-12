@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.CommentNotFoundException;
+import ru.practicum.shareit.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.mapper.CommentMapper;
@@ -65,6 +67,27 @@ public class CommentServiceImplTest {
 
         verify(bookingRepository).existsBookingByItemAndBookerAndStatusNotAndStart(eq(item), eq(user), any());
         verify(commentRepository).save(any());
+    }
+
+    @Test
+    public void testAddNewCommentWhenItemNotFound() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () -> commentService.addNewComment(commentShortDto, 100L, user.getId()));
+
+        verify(itemRepository).findById(100L);
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    public void testAddNewCommentWhenUserNotFound() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> commentService.addNewComment(commentShortDto, item.getId(), 100L));
+
+        verify(userRepository).findById(100L);
+        verify(commentRepository, never()).save(any());
     }
 
     @Test

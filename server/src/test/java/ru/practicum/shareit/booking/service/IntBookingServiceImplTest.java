@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -59,12 +59,12 @@ public class IntBookingServiceImplTest {
 
     @Test
     void testGetAllBookingsByUser() {
-        Collection<BookingShortDto> userBookings = bookingService.getAllBookingsByUser(booker.getId(), "CURRENT", 0, 10);
+        Collection<BookingDto> userBookings = bookingService.getAllBookingsByUser(booker.getId(), "CURRENT", 0, 10);
 
         assertNotNull(userBookings);
         assertEquals(2, userBookings.size());
 
-        for (BookingShortDto dto : userBookings) {
+        for (BookingDto dto : userBookings) {
             assertNotNull(dto.getId());
             assertNotNull(dto.getStart());
             assertNotNull(dto.getEnd());
@@ -76,12 +76,12 @@ public class IntBookingServiceImplTest {
 
     @Test
     void testGetAllBookingsForUserItems() {
-        Collection<BookingShortDto> userBookings = bookingService.getBookingsForUserItems(user.getId(), "CURRENT", 0, 10);
+        Collection<BookingDto> userBookings = bookingService.getBookingsForUserItems(user.getId(), "CURRENT", 0, 10);
 
         assertNotNull(userBookings);
         assertEquals(2, userBookings.size());
 
-        for (BookingShortDto dto : userBookings) {
+        for (BookingDto dto : userBookings) {
             assertNotNull(dto.getId());
             assertNotNull(dto.getStart());
             assertNotNull(dto.getEnd());

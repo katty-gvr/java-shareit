@@ -16,9 +16,6 @@ public class ItemRequestController {
     @PostMapping
     public ItemRequestDto createNewRequest(@RequestHeader("X-Sharer-User-Id") final Long userId,
                                            @RequestBody ItemRequestDto itemRequestDto) {
-       /* if (itemRequestDto.getDescription() == null || itemRequestDto.getDescription().isBlank()) {
-            throw new BadRequestException("Описание запроса не может быть пустым!");
-        }*/
         return requestService.addNewRequest(itemRequestDto, userId);
     }
 
@@ -31,9 +28,6 @@ public class ItemRequestController {
     public Collection<ItemRequestDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") final Long userId,
                                                      @RequestParam(value = "from", defaultValue = "0") final Integer from,
                                                      @RequestParam(value = "size", defaultValue = "10") final Integer size) {
-        /*if (from < 0) {
-            throw new BadRequestException("Некорректно переданный параметр запроса");
-        }*/
         return requestService.getAllRequestsForAllUsers(userId, from, size);
     }
 

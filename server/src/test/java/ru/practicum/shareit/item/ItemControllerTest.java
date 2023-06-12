@@ -61,38 +61,6 @@ public class ItemControllerTest {
     }
 
     @Test
-    void createItemWithInvalidParameters() throws Exception {
-        ItemDto itemDtoWithInvalidName = ItemDto.builder().id(1L).name(" ").description("desc").available(true).build();
-        ItemDto itemDtoWithInvalidDescription = ItemDto.builder().id(1L).name("name").description("").available(true).build();
-        ItemDto itemDtoWithInvalidAvailable = ItemDto.builder().id(1L).name("name").description("desc").available(null).build();
-
-        when(itemService.createItem(anyLong(), any(ItemDto.class))).thenReturn(itemDto);
-
-        mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", 1)
-                        .content(objectMapper.writeValueAsString(itemDtoWithInvalidName))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", 1)
-                        .content(objectMapper.writeValueAsString(itemDtoWithInvalidDescription))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", 1)
-                        .content(objectMapper.writeValueAsString(itemDtoWithInvalidAvailable))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(itemService, never()).createItem(anyLong(), any(ItemDto.class));
-    }
-
-    @Test
     void updateItem() throws Exception {
         itemDto.setDescription("Updated Item Description");
         when(itemService.updateItem(anyLong(),anyLong(), any(ItemDto.class)))
@@ -145,23 +113,6 @@ public class ItemControllerTest {
     }
 
     @Test
-    void getUserItemsWithIncorrectPageParameters() throws Exception {
-        int invalidPage = -1;
-        int invalidSize = -10;
-
-        when(itemService.getUserItems(anyLong(), anyInt(), anyInt()))
-                .thenReturn(List.of(itemDto));
-
-        mockMvc.perform(get("/items")
-                        .param("page", String.valueOf(invalidPage))
-                        .param("size", String.valueOf(invalidSize))
-                        .header("X-Sharer-User-Id", 1))
-                .andExpect(status().isBadRequest());
-
-        verify(itemService, never()).getUserItems(anyLong(), eq(invalidPage), eq(invalidSize));
-    }
-
-    @Test
     void searchItem() throws Exception {
         ItemDto dtoForSearch = ItemDto.builder().id(2L).name("Щетка для обуви").description("Хорошо чистит").available(true)
                         .build();
@@ -178,40 +129,6 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].available", is(dtoForSearch.getAvailable())));
 
         verify(itemService).searchItem(anyString(), anyInt(), anyInt());
-    }
-
-    @Test
-    void searchItemWithIncorrectParameter() throws Exception {
-        ItemDto dtoForSearch = ItemDto.builder().id(2L).name("Щетка для обуви").description("Хорошо чистит").available(true)
-                .build();
-        when(itemService.searchItem(anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(dtoForSearch));
-
-        mockMvc.perform(get("/items/search")
-                        .param("text", ""))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-
-        verify(itemService, never()).searchItem(anyString(), anyInt(), anyInt());
-    }
-
-    @Test
-    void searchItemWithIncorrectPageParameters() throws Exception {
-        int invalidPage = -1;
-        int invalidSize = -10;
-
-        ItemDto dtoForSearch = ItemDto.builder().id(2L).name("Щетка для обуви").description("Хорошо чистит").available(true)
-                .build();
-        when(itemService.searchItem(anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(dtoForSearch));
-
-        mockMvc.perform(get("/items/search")
-                        .param("text", "щетка")
-                        .param("page", String.valueOf(invalidPage))
-                        .param("size", String.valueOf(invalidSize)))
-                .andExpect(status().isBadRequest());
-
-        verify(itemService, never()).searchItem(anyString(), eq(invalidPage), eq(invalidSize));
     }
 
     @Test
@@ -236,22 +153,5 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.created", is(notNullValue())));
 
         verify(commentService).addNewComment(any(CommentShortDto.class), anyLong(), anyLong());
-    }
-
-    @Test
-    void createItemCommentWithoutText() throws Exception {
-        CommentShortDto shortInvalidDto = CommentShortDto.builder().text("").build();
-
-        when(commentService.addNewComment(any(CommentShortDto.class), anyLong(), anyLong()))
-                .thenReturn(commentDto);
-
-        mockMvc.perform(post("/items/{itemId}/comment", 1)
-                        .header("X-Sharer-User-Id", 1)
-                        .content(objectMapper.writeValueAsString(shortInvalidDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(commentService, never()).addNewComment(any(CommentShortDto.class), anyLong(), anyLong());
     }
 }

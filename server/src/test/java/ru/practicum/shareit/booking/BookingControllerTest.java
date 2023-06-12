@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -38,9 +39,9 @@ public class BookingControllerTest {
             .available(true).build();
     private final BookingShortDto bookingShortDto = ru.practicum.shareit.booking.dto.BookingShortDto.builder().id(1L).start(LocalDateTime.now())
             .end(LocalDateTime.now().plusHours(2)).itemId(1L).bookerId(1L).build();
-    private final BookingShortDto bookingDto = BookingShortDto.builder().id(1L).start(bookingShortDto.getStart())
+    private final BookingDto bookingDto = BookingDto.builder().id(1L).start(bookingShortDto.getStart())
             .end(bookingShortDto.getEnd()).item(itemDto).booker(userBookerDto).status(BookingStatus.WAITING).build();
-    private final BookingShortDto approvedBooking = BookingShortDto.builder().id(2L).start(bookingShortDto.getStart())
+    private final BookingDto approvedBooking = BookingDto.builder().id(2L).start(bookingShortDto.getStart())
             .end(bookingShortDto.getEnd()).item(itemDto).booker(userBookerDto).status(BookingStatus.APPROVED).build();
 
     @Test

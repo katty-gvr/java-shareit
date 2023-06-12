@@ -65,31 +65,6 @@ public class UserControllerTest {
     }
 
     @Test
-    void createNewUserWithInvalidNameOrEmail() throws Exception {
-        UserDto userWithoutName = UserDto.builder().id(1L).name(null).email("user@name.ru").build();
-        UserDto userWithBlankEmail = UserDto.builder().id(1L).name("userName").email("").build();
-
-        when(userService.addUser(any(UserDto.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        mockMvc.perform(post("/users")
-                        .content(objectMapper.writeValueAsString(userWithoutName))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never()).addUser(userWithoutName);
-
-        mockMvc.perform(post("/users")
-                        .content(objectMapper.writeValueAsString(userWithBlankEmail))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never()).addUser(userWithBlankEmail);
-
-    }
-
-    @Test
     void updateUser() throws Exception {
         UserDto userWithUpdatedName = UserDto.builder().id(1L).name("nameUpdated").build();
         UserDto userWithUpdatedEmail = UserDto.builder().id(2L).email("updated@email.ru").build();
@@ -117,19 +92,6 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email", notNullValue()));
 
         verify(userService).updateUser(2L, userWithUpdatedEmail);
-    }
-
-    @Test
-    void updateUserWithInvalidEmail() throws Exception {
-        UserDto userWithInvalidEmail = UserDto.builder().name("testUser").email("email.email").build();
-
-        mockMvc.perform(patch("/users/1")
-                        .content(objectMapper.writeValueAsString(userWithInvalidEmail))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never()).updateUser(1L, userWithInvalidEmail);
     }
 
     @Test

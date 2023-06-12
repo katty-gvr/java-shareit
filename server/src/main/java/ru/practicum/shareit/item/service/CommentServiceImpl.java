@@ -41,17 +41,18 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto addNewComment(CommentShortDto commentDto, Long itemId, Long userId) {
+        LocalDateTime now = LocalDateTime.now();
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Вещь c id=%d не найдена", itemId)));
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException(String.format("Пользователь с id=%d не найден", userId)));
         Comment comment = CommentMapper.toComment(commentDto, item, user);
         if (!bookingRepository.existsBookingByItemAndBookerAndStatusNotAndStart(comment.getItem(),
-                comment.getAuthor(), LocalDateTime.now())) {
-            throw new BadRequestException("Нельзя оставить комменатрий к вещи, если она не была взята в аренду" +
+                comment.getAuthor(), now)) {
+            throw new BadRequestException("Нельзя оставить комменатрий к вещи, если она не была взята в аренду " +
                             "или аренда еще не началась");
         }
-        comment.setCreated(LocalDateTime.now());
+        comment.setCreated(now);
         log.info("Пользователь id={} добавил комментарий id={} к вещи id={}",
                 comment.getAuthor().getId(), comment.getId(), comment.getItem().getId());
         return CommentMapper.toCommentDto(commentRepository.save(comment));

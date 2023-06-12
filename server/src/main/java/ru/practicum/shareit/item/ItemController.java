@@ -41,10 +41,8 @@ public class ItemController {
     @GetMapping
     public Collection<ItemDto> getUserItems(@RequestHeader("X-Sharer-User-Id") final Long userId,
                                             @RequestParam(value = "from", required = false, defaultValue = "0")
-                                            //@PositiveOrZero(message = "Значение 'from' должно быть положительным")
                                             final Integer from,
                                             @RequestParam(value = "size", required = false, defaultValue = "10")
-                                                //@Positive(message = "Значение 'size' должно быть положительным")
                                                 final Integer size) {
         return itemService.getUserItems(userId, from, size);
     }
@@ -52,14 +50,9 @@ public class ItemController {
     @GetMapping("/search")
     public Collection<ItemDto> searchItem(@RequestParam("text") final String text,
                                           @RequestParam(value = "from", required = false, defaultValue = "0")
-                                          //@PositiveOrZero(message = "Значение 'from' должно быть положительным")
                                           final Integer from,
                                           @RequestParam(value = "size", required = false, defaultValue = "10")
-                                              //@Positive(message = "Значение 'size' должно быть положительным")
                                               final Integer size) {
-       /* if (text == null || text.isBlank()) {
-            return Collections.emptyList();
-        }*/
         return itemService.searchItem(text, from, size);
     }
 
@@ -67,9 +60,6 @@ public class ItemController {
     public CommentDto createItemComment(@RequestBody final CommentShortDto commentShortDto,
                                         @PathVariable final Long itemId,
                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
-        /*if (commentShortDto.getText().isBlank()) {
-            throw new BadRequestException("Текст комментария не может быть пустым");
-        }*/
         return commentService.addNewComment(commentShortDto, itemId, userId);
     }
 }

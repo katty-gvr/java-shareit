@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Data
 @NoArgsConstructor
@@ -22,21 +20,15 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @NotBlank
     @Column(name = "name", nullable = false)
     private String name;
 
-    @NotNull
-    @NotBlank
     @Column(name = "description", nullable = false)
     private String description;
 
-    @NotNull
     @Column(name = "available", nullable = false)
     private Boolean available;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;

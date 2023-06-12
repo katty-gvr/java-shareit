@@ -3,13 +3,14 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.validate.Create;
 import ru.practicum.shareit.validate.Update;
 
-@RestController
+@Controller
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Validated
@@ -25,7 +26,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Object> createNewUser(@RequestBody @Validated(Create.class) UserDto userDto) {
-        log.info("Создан новый пользователь с id {}", userDto.getId());
+        log.info("Создан новый пользователь с именем {}", userDto.getName());
         return userClient.addUser(userDto);
     }
 
