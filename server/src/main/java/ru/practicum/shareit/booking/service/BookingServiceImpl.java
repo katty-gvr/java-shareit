@@ -46,7 +46,6 @@ public class BookingServiceImpl implements BookingService {
         if (item.getOwner().getId().equals(userId)) {
             throw new BookingNotFoundException("Нелья сделать бронирование на собственную вещь");
         }
-        validateBookingTime(bookingShortDto.getStart(), bookingShortDto.getEnd());
         Booking booking = BookingMapper.toBooking(bookingShortDto);
         booking.setBooker(booker);
         booking.setItem(item);
@@ -106,22 +105,6 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> userBookings = bookingRepository.findByItem_Owner(user, page);
         log.info("Список бронирований со статусом {} для вещей пользователя с id={} успешно получен", state, userId);
         return getBookingsByState(userBookings, stateIn).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
-    }
-
-    private void validateBookingTime(LocalDateTime start, LocalDateTime end) {
-        LocalDateTime now = LocalDateTime.now();
-        if (end == null || start == null) {
-            throw new BookingException("Время начала и окончания бронирования должно быть задано");
-        }
-        if (end.isBefore(now) || end.isBefore(start)) {
-            throw new BookingException("Время конца бронирования указано некорректно.");
-        }
-        if (start.isBefore(now) || start.isAfter(end)) {
-            throw new BookingException("Время начала бронирования указано некорректно.");
-        }
-        if (start.equals(end)) {
-            throw new BookingException("Время начала бронирования указано некорректно.");
-        }
     }
 
     private Collection<Booking> getBookingsByState(List<Booking> allBookings, StateOfBookingRequest state) {

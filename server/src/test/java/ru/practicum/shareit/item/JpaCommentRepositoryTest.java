@@ -43,9 +43,9 @@ public class JpaCommentRepositoryTest {
 
     @AfterEach
     void deleteData() {
-        userRepository.deleteAll();
-        itemRepository.deleteAll();
         commentRepository.deleteAll();
+        itemRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test

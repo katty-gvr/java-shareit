@@ -37,8 +37,8 @@ public class JpaItemRequestRepositoryTest {
 
     @AfterEach
     void deleteData() {
-        userRepository.deleteAll();
         requestRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test

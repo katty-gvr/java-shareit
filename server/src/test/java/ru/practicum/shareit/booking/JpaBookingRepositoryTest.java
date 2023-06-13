@@ -44,9 +44,9 @@ public class JpaBookingRepositoryTest {
 
     @AfterEach
     void deleteData() {
-        userRepository.deleteAll();
-        itemRepository.deleteAll();
         bookingRepository.deleteAll();
+        itemRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test

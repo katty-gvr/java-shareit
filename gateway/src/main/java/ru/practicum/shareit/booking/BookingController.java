@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.dto.StateOfBookingRequest;
+import ru.practicum.shareit.validate.BookingTimeValidator;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -18,10 +19,12 @@ import javax.validation.constraints.PositiveOrZero;
 @Slf4j
 public class BookingController {
     private final BookingClient bookingClient;
+    private final BookingTimeValidator bookingTimeValidator;
 
     @PostMapping
     public ResponseEntity<Object> createNewBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                    @RequestBody final BookingShortDto bookingShortDto) {
+        bookingTimeValidator.validateBookingTime(bookingShortDto.getStart(), bookingShortDto.getEnd());
         log.info("Пользователь с id={} создал бронирование на вещь с id={}", userId, bookingShortDto.getItemId());
         return bookingClient.addBooking(userId, bookingShortDto);
     }

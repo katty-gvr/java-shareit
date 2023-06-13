@@ -121,37 +121,6 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    void testCreateBookingWithIncorrectBookingTime() {
-        BookingShortDto bookingWithNullTime = ru.practicum.shareit.booking.dto.BookingShortDto.builder().id(2L).start(null)
-                .end(null).itemId(1L).bookerId(2L).build();
-        BookingShortDto bookingWithIncorrectEnd = ru.practicum.shareit.booking.dto.BookingShortDto.builder().id(2L).start(now.plusHours(1))
-                .end(now.minusHours(5)).itemId(1L).bookerId(2L).build();
-        BookingShortDto bookingWithIncorrectStart = ru.practicum.shareit.booking.dto.BookingShortDto.builder().id(1L).start(now.minusHours(2))
-                .end(now.plusHours(2)).itemId(1L).bookerId(2L).build();
-        BookingShortDto bookingWithStartEqualsEnd = ru.practicum.shareit.booking.dto.BookingShortDto.builder().id(1L).start(now.plusHours(1))
-                .end(now.plusHours(1)).itemId(1L).bookerId(2L).build();
-
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
-        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-
-        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
-                bookingWithNullTime));
-        verify(bookingRepository, never()).save(any(Booking.class));
-
-        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
-                bookingWithIncorrectEnd));
-        verify(bookingRepository, never()).save(any(Booking.class));
-
-        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
-                bookingWithIncorrectStart));
-        verify(bookingRepository, never()).save(any(Booking.class));
-
-        assertThrows(BookingException.class, () -> bookingService.createBooking(booker.getId(),
-                bookingWithStartEqualsEnd));
-        verify(bookingRepository, never()).save(any(Booking.class));
-    }
-
-    @Test
     void testApproveBooking() {
         Long bookingItemOwner = booking.getItem().getOwner().getId();
 
